@@ -10,10 +10,7 @@ extern crate slog_term;
 pub mod error;
 pub mod utils;
 
-use error::{Error, ErrorCommon};
-
 use slog::Drain;
-use std::backtrace::Backtrace;
 
 pub struct Confium {
     logger: slog::Logger,

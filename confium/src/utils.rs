@@ -7,7 +7,7 @@ fn cstring(cstr: *const c_char) -> Result<String> {
         return Err(Error::NullPointer {
             common: ErrorCommon {
                 source: None,
-                backtrace: Some(Backtrace::capture().to_string()),
+                backtrace: Some(Backtrace::capture()),
             },
         });
     }
@@ -18,7 +18,7 @@ fn cstring(cstr: *const c_char) -> Result<String> {
             return Err(Error::InvalidUTF8 {
                 common: ErrorCommon {
                     source: None,
-                    backtrace: Some(Backtrace::capture().to_string()),
+                    backtrace: Some(Backtrace::capture()),
                 },
             });
         }
