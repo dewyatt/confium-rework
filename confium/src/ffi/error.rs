@@ -2,6 +2,7 @@ use crate::error::Error;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+#[derive(Clone)]
 pub struct FFIError {
     pub message: String,
     pub code: u32,
@@ -14,15 +15,23 @@ impl std::fmt::Display for FFIError {
         write!(f, "{}", self.message)
     }
 }
+
+fn to_ffierror(err: &Error) -> FFIError {
+    FFIError {
+        message: err.to_string(),
+        code: err.code(),
+        source: match err.source() {
+            None => None,
+            Some(src) => Some(Box::new(to_ffierror(src))),
+        },
+        backtrace: err.backtrace().as_ref().map(|bt| bt.to_string()),
+    }
+}
+
 impl From<&Error> for FFIError {
     #[inline]
     fn from(err: &Error) -> FFIError {
-        FFIError {
-            message: err.to_string(),
-            code: err.code(),
-            source: None,
-            backtrace: err.backtrace().as_ref().map(|bt| bt.to_string()),
-        }
+        to_ffierror(err)
     }
 }
 
@@ -50,18 +59,17 @@ pub extern "C" fn cfm_err_get_code(err: *const FFIError, code: *mut u32) -> u32 
     0
 }
 
-/*
 #[no_mangle]
 pub extern "C" fn cfm_err_get_source(err: *const FFIError, src: *mut *mut FFIError) -> u32 {
     unsafe {
         *src = match (*err).source {
             None => std::ptr::null_mut(),
-            Some(ref source) => source,
+            Some(ref source) => Box::into_raw(Box::new((**source).clone())),
         }
     }
     0
 }
-*/
+
 #[no_mangle]
 pub extern "C" fn cfm_err_get_backtrace(err: *mut FFIError, backtrace: *mut *const c_char) -> u32 {
     unsafe {

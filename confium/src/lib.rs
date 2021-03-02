@@ -57,14 +57,11 @@ pub extern "C" fn do_test(input: *const c_char, err: *mut *mut FFIError) -> u32 
     }
     0
 }
-/*
+
 fn parsehex(s: &str) -> Result<u8> {
     if s.is_empty() {
         return Err(Error::InvalidFormat {
-            common: ErrorCommon {
-                source: None,
-                backtrace: Some(Backtrace::capture()),
-            },
+            common: err_common!(None),
         });
     }
     let mut result: u8 = 0;
@@ -73,10 +70,7 @@ fn parsehex(s: &str) -> Result<u8> {
             Some(x) => x,
             None => {
                 return Err(Error::InvalidHexDigit {
-                    common: ErrorCommon {
-                        source: None,
-                        backtrace: Some(Backtrace::capture()),
-                    },
+                    common: err_common!(None),
                     ch: ch,
                 });
             }
@@ -85,10 +79,7 @@ fn parsehex(s: &str) -> Result<u8> {
             Some(result) => result,
             None => {
                 return Err(Error::Overflow {
-                    common: ErrorCommon {
-                        source: None,
-                        backtrace: Some(Backtrace::capture()),
-                    },
+                    common: err_common!(None),
                 });
             }
         };
@@ -96,14 +87,54 @@ fn parsehex(s: &str) -> Result<u8> {
             Some(result) => result,
             None => {
                 return Err(Error::Overflow {
-                    common: ErrorCommon {
-                        source: None,
-                        backtrace: Some(Backtrace::capture()),
-                    },
+                    common: err_common!(None),
                 });
             }
         };
     }
     Ok(result)
 }
-*/
+
+#[no_mangle]
+pub extern "C" fn parse_hex(s: *const c_char, result: *mut u8, err: *mut *mut FFIError) -> u32 {
+    /*
+    ffi_check_not_null!(result, err);
+    let s = match cstring(s) {
+        Ok(s) => s,
+        Err(e) => {
+            ffi_handle_err!(e, err);
+        }
+    };
+    match parsehex(&s) {
+        Ok(value) => {
+            unsafe {
+                *result = value;
+            }
+            0
+        }
+        Err(e) => {
+            ffi_handle_err!(e, err);
+        }
+    }
+    */
+    let e = Error::InvalidFormat {
+        common: crate::error::ErrorCommon {
+            source: Some(Box::new(Error::InvalidHexDigit {
+                ch: 'M',
+                common: crate::error::ErrorCommon {
+                    source: Some(Box::new(Error::InvalidHexDigit {
+                        ch: 'N',
+                        common: crate::error::ErrorCommon {
+                            source: None,
+                            backtrace: None,
+                        },
+                    })),
+                    backtrace: None,
+                },
+            })),
+            backtrace: Some(std::backtrace::Backtrace::capture()),
+        },
+    };
+    ffi_handle_err!(e, err);
+    1
+}
