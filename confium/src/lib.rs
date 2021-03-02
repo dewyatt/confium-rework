@@ -20,6 +20,8 @@ use error::Error;
 use ffi::error::FFIError;
 use ffi::utils::cstring;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Confium {
@@ -39,7 +41,7 @@ impl Confium {
         let decorator = slog_term::TermDecorator::new().build();
         let drain = slog_term::FullFormat::new(decorator).build().fuse();
         let drain = slog_async::Async::new(drain).build().fuse();
-        let log = slog::Logger::root(drain, o!());
+        let log = slog::Logger::root(drain, o!("version" => VERSION));
         Confium::new_custom(log)
     }
 }
