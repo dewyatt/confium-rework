@@ -6,22 +6,15 @@ pub struct ErrorCommon {
 }
 
 pub enum Error {
+    Unknown {
+        common: ErrorCommon,
+    },
     NullPointer {
         common: ErrorCommon,
         param: &'static str,
     },
     InvalidUTF8 {
         common: ErrorCommon,
-    },
-    Overflow {
-        common: ErrorCommon,
-    },
-    InvalidFormat {
-        common: ErrorCommon,
-    },
-    InvalidHexDigit {
-        common: ErrorCommon,
-        ch: char,
     },
 }
 
@@ -42,30 +35,24 @@ impl Error {
 #[allow(non_camel_case_types)]
 #[repr(u32)]
 pub enum ErrorCode {
-    NULL_POINTER = 1,
-    INVALID_UTF8 = 2,
-    OVERFLOW = 3,
-    INVALID_HEX_DIGIT = 4,
-    INVALID_FORMAT = 5,
+    UNKNOWN = 1,
+    NULL_POINTER = 2,
+    INVALID_UTF8 = 3,
 }
 
 fn error_code(error: &Error) -> u32 {
     match error {
+        Error::Unknown { .. } => ErrorCode::UNKNOWN.into(),
         Error::NullPointer { .. } => ErrorCode::NULL_POINTER.into(),
         Error::InvalidUTF8 { .. } => ErrorCode::INVALID_UTF8.into(),
-        Error::Overflow { .. } => ErrorCode::OVERFLOW.into(),
-        Error::InvalidHexDigit { .. } => ErrorCode::INVALID_HEX_DIGIT.into(),
-        Error::InvalidFormat { .. } => ErrorCode::INVALID_FORMAT.into(),
     }
 }
 
 fn error_common(error: &Error) -> &ErrorCommon {
     match error {
+        Error::Unknown { common, .. } => common,
         Error::NullPointer { common, .. } => common,
         Error::InvalidUTF8 { common, .. } => common,
-        Error::Overflow { common, .. } => common,
-        Error::InvalidHexDigit { common, .. } => common,
-        Error::InvalidFormat { common, .. } => common,
     }
 }
 
@@ -79,20 +66,14 @@ impl From<ErrorCode> for u32 {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            Error::Unknown { .. } => {
+                write!(f, "Unknown error")
+            }
             Error::NullPointer { param, .. } => {
                 write!(f, "Null pointer (parameter '{}')", param)
             }
             Error::InvalidUTF8 { .. } => {
                 write!(f, "Invalid UTF-8")
-            }
-            Error::Overflow { .. } => {
-                write!(f, "Overflow")
-            }
-            Error::InvalidHexDigit { ch, .. } => {
-                write!(f, "Invalid hex digit '{}'", ch)
-            }
-            Error::InvalidFormat { .. } => {
-                write!(f, "Invalid format")
             }
         }
     }

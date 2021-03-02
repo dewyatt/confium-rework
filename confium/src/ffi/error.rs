@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::error::{Error, ErrorCode};
 use std::ffi::CString;
 use std::os::raw::c_char;
 
@@ -78,8 +78,9 @@ pub extern "C" fn cfm_err_get_backtrace(err: *mut FFIError, backtrace: *mut *con
             Some(ref bt) => match CString::new(&**bt) {
                 Ok(s) => s.into_raw(),
                 Err(e) => {
-                    // TODO
-                    panic!("fail");
+                    *backtrace = std::ptr::null_mut();
+                    eprintln!("Error: Failed to convert backtrace");
+                    return ErrorCode::UNKNOWN as u32;
                 }
             },
         };
