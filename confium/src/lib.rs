@@ -8,9 +8,16 @@ extern crate slog_stdlog;
 extern crate slog_term;
 
 pub mod error;
+#[macro_use]
 pub mod utils;
+#[macro_use]
+pub mod ffi;
 
 use slog::Drain;
+use std::os::raw::c_char;
+
+use error::Error;
+use ffi::utils::cstring;
 
 pub struct Confium {
     logger: slog::Logger,
@@ -32,4 +39,18 @@ impl Confium {
         let log = slog::Logger::root(drain, o!());
         Confium::new_custom(log)
     }
+}
+
+#[no_mangle]
+pub extern "C" fn do_test(input: *const c_char, err: *mut *mut Error) -> u32 {
+    ffi_check_not_null!(input, err);
+    match cstring(input) {
+        Ok(s) => {
+            println!("input: {}", s);
+        }
+        Err(e) => {
+            println!("Error: {}", e);
+        }
+    }
+    0
 }
