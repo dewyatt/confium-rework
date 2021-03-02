@@ -1,7 +1,5 @@
 use std::backtrace::Backtrace;
 
-pub type Result<T> = std::result::Result<T, Error>;
-
 pub struct ErrorCommon {
     pub source: Option<Box<Error>>,
     pub backtrace: Option<Backtrace>,
@@ -21,6 +19,14 @@ impl Error {
     pub fn code(&self) -> u32 {
         error_code(&self)
     }
+
+    pub fn source(&self) -> &Option<Box<Error>> {
+        &error_common(&self).source
+    }
+
+    pub fn backtrace(&self) -> &Option<Backtrace> {
+        &error_common(&self).backtrace
+    }
 }
 
 #[allow(non_camel_case_types)]
@@ -34,6 +40,13 @@ fn error_code(error: &Error) -> u32 {
     match error {
         Error::NullPointer { .. } => ErrorCode::NULL_POINTER.into(),
         Error::InvalidUTF8 { .. } => ErrorCode::INVALID_UTF8.into(),
+    }
+}
+
+fn error_common(error: &Error) -> &ErrorCommon {
+    match error {
+        Error::NullPointer { common, .. } => common,
+        Error::InvalidUTF8 { common, .. } => common,
     }
 }
 

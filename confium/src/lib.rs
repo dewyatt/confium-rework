@@ -17,7 +17,10 @@ use slog::Drain;
 use std::os::raw::c_char;
 
 use error::Error;
+use ffi::error::FFIError;
 use ffi::utils::cstring;
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Confium {
     logger: slog::Logger,
@@ -42,7 +45,7 @@ impl Confium {
 }
 
 #[no_mangle]
-pub extern "C" fn do_test(input: *const c_char, err: *mut *mut Error) -> u32 {
+pub extern "C" fn do_test(input: *const c_char, err: *mut *mut FFIError) -> u32 {
     ffi_check_not_null!(input, err);
     match cstring(input) {
         Ok(s) => {
@@ -54,3 +57,53 @@ pub extern "C" fn do_test(input: *const c_char, err: *mut *mut Error) -> u32 {
     }
     0
 }
+/*
+fn parsehex(s: &str) -> Result<u8> {
+    if s.is_empty() {
+        return Err(Error::InvalidFormat {
+            common: ErrorCommon {
+                source: None,
+                backtrace: Some(Backtrace::capture()),
+            },
+        });
+    }
+    let mut result: u8 = 0;
+    for (idx, ch) in s.trim_start_matches("0x").char_indices() {
+        let x = match ch.to_digit(16) {
+            Some(x) => x,
+            None => {
+                return Err(Error::InvalidHexDigit {
+                    common: ErrorCommon {
+                        source: None,
+                        backtrace: Some(Backtrace::capture()),
+                    },
+                    ch: ch,
+                });
+            }
+        } as u8;
+        result = match result.checked_mul(16) {
+            Some(result) => result,
+            None => {
+                return Err(Error::Overflow {
+                    common: ErrorCommon {
+                        source: None,
+                        backtrace: Some(Backtrace::capture()),
+                    },
+                });
+            }
+        };
+        result = match result.checked_add(x) {
+            Some(result) => result,
+            None => {
+                return Err(Error::Overflow {
+                    common: ErrorCommon {
+                        source: None,
+                        backtrace: Some(Backtrace::capture()),
+                    },
+                });
+            }
+        };
+    }
+    Ok(result)
+}
+*/

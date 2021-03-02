@@ -1,15 +1,9 @@
-use crate::error::{Error, ErrorCommon, Result};
-use std::backtrace::Backtrace;
-use std::os::raw::c_char;
-
-use crate::error::ErrorCode;
-
 #[macro_escape]
 macro_rules! err_common {
     ($($source:tt)+) => {{
-        ErrorCommon {
+        $crate::error::ErrorCommon {
             source: $($source)+,
-            backtrace: Some(Backtrace::capture()),
+            backtrace: Some(::std::backtrace::Backtrace::capture()),
         }
     }};
 }
@@ -18,8 +12,7 @@ macro_rules! err_common {
 macro_rules! check_not_null {
     ($param:ident) => {{
         if $param.is_null() {
-            use std::backtrace::Backtrace;
-            return Err(Error::NullPointer {
+            return Err($crate::error::Error::NullPointer {
                 common: err_common!(None),
                 param: stringify!($param),
             });
