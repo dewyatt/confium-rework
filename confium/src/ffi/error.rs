@@ -35,17 +35,32 @@ impl From<&Error> for FFIError {
     }
 }
 
+macro_rules! err_check_not_null {
+    ($param:ident) => {{
+        if $param.is_null() {
+            let err = $crate::error::Error::NullPointer {
+                common: err_common!(None),
+                param: stringify!($param),
+            };
+            eprintln!("Error: {:?}", err);
+            return err.code().into();
+        }
+    }};
+}
 #[no_mangle]
 pub extern "C" fn cfm_err_get_msg(err: *const FFIError, msg: *mut *mut c_char) -> u32 {
+    err_check_not_null!(err);
+    err_check_not_null!(msg);
+    let errmsg;
     unsafe {
         *msg = std::ptr::null_mut();
-        let errmsg = format!("{}", *err);
-        match CString::new(errmsg) {
-            Ok(s) => *msg = s.into_raw(),
-            Err(e) => {
-                eprintln!("{:?}", e);
-                panic!("fail");
-            }
+        errmsg = format!("{}", *err);
+    }
+    match CString::new(errmsg) {
+        Ok(s) => unsafe { *msg = s.into_raw() },
+        Err(e) => {
+            eprintln!("Error: {:?}", e);
+            return ErrorCode::UNKNOWN as u32;
         }
     }
     0
@@ -72,17 +87,16 @@ pub extern "C" fn cfm_err_get_source(err: *const FFIError, src: *mut *mut FFIErr
 
 #[no_mangle]
 pub extern "C" fn cfm_err_get_backtrace(err: *mut FFIError, backtrace: *mut *const c_char) -> u32 {
-    unsafe {
-        *backtrace = match (*err).backtrace {
-            None => std::ptr::null_mut(),
-            Some(ref bt) => match CString::new(&**bt) {
-                Ok(s) => s.into_raw(),
-                Err(e) => {
-                    *backtrace = std::ptr::null_mut();
-                    eprintln!("Error: Failed to convert backtrace");
-                    return ErrorCode::UNKNOWN as u32;
-                }
-            },
+    err_check_not_null!(err);
+    err_check_not_null!(backtrace);
+    unsafe { *backtrace = std::ptr::null_mut() }
+    if let Some(ref bt) = unsafe { (*err).backtrace.as_ref() } {
+        match CString::new(bt.to_string()) {
+            Ok(s) => unsafe { *backtrace = s.into_raw() },
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                return ErrorCode::UNKNOWN as u32;
+            }
         };
     }
     0
