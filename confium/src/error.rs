@@ -78,3 +78,19 @@ impl std::fmt::Display for Error {
         }
     }
 }
+
+impl std::fmt::Debug for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self)?;
+        if let Some(bt) = self.backtrace() {
+            if std::backtrace::BacktraceStatus::Captured == bt.status() {
+                write!(f, "{}", bt.to_string())?;
+            }
+        }
+
+        while let Some(src) = self.source() {
+            write!(f, "{:?}", src)?;
+        }
+        Ok(())
+    }
+}
