@@ -87,7 +87,6 @@ impl std::fmt::Debug for Error {
                 write!(f, "{}", bt.to_string())?;
             }
         }
-
         while let Some(src) = self.source() {
             write!(f, "{:?}", src)?;
         }

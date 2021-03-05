@@ -7,18 +7,21 @@ extern crate slog_async;
 extern crate slog_stdlog;
 extern crate slog_term;
 
-pub mod error;
 #[macro_use]
 pub mod utils;
+pub mod error;
 #[macro_use]
 pub mod ffi;
+pub mod hash;
+
+use std::collections::HashMap;
+use std::path::Path;
 
 use slog::Drain;
-use std::os::raw::c_char;
 
 use error::Error;
-use ffi::error::FFIError;
-use ffi::utils::cstring;
+
+type StringOptions = HashMap<String, String>;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -43,5 +46,22 @@ impl Confium {
         let drain = slog_async::Async::new(drain).build().fuse();
         let log = slog::Logger::root(drain, o!("version" => VERSION));
         Confium::new_custom(log)
+    }
+
+    pub fn load_plugin(&self, path: &Path, options: &StringOptions) -> Result<()> {
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_load_plugin() {
+        let cfm = Confium::new();
+        let mut opts = StringOptions::new();
+        opts.insert("test".to_string(), "value".to_string());
+        cfm.load_plugin(Path::new("/a/b/c"), &opts);
     }
 }
