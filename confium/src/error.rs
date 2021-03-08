@@ -16,6 +16,10 @@ pub enum Error {
     InvalidUTF8 {
         common: ErrorCommon,
     },
+    WrongType {
+        common: ErrorCommon,
+        expected: &'static str,
+    },
 }
 
 impl Error {
@@ -38,6 +42,7 @@ pub enum ErrorCode {
     UNKNOWN = 1,
     NULL_POINTER = 2,
     INVALID_UTF8 = 3,
+    WRONG_TYPE = 4,
 }
 
 fn error_code(error: &Error) -> u32 {
@@ -45,6 +50,7 @@ fn error_code(error: &Error) -> u32 {
         Error::Unknown { .. } => ErrorCode::UNKNOWN.into(),
         Error::NullPointer { .. } => ErrorCode::NULL_POINTER.into(),
         Error::InvalidUTF8 { .. } => ErrorCode::INVALID_UTF8.into(),
+        Error::WrongType { .. } => ErrorCode::WRONG_TYPE.into(),
     }
 }
 
@@ -53,6 +59,7 @@ fn error_common(error: &Error) -> &ErrorCommon {
         Error::Unknown { common, .. } => common,
         Error::NullPointer { common, .. } => common,
         Error::InvalidUTF8 { common, .. } => common,
+        Error::WrongType { common, .. } => common,
     }
 }
 
@@ -74,6 +81,9 @@ impl std::fmt::Display for Error {
             }
             Error::InvalidUTF8 { .. } => {
                 write!(f, "Invalid UTF-8")
+            }
+            Error::WrongType { expected, .. } => {
+                write!(f, "Wrong type (expected '{}')", expected)
             }
         }
     }

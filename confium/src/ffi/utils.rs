@@ -6,7 +6,7 @@ use std::os::raw::c_char;
 use crate::utils;
 
 #[macro_escape]
-macro_rules! ffi_handle_err {
+macro_rules! ffi_return_err {
     ($error:ident, $errptr:ident) => {{
         let code = $error.code();
         if !$errptr.is_null() {
@@ -26,7 +26,7 @@ macro_rules! ffi_check_not_null {
                 common: err_common!(None),
                 param: stringify!($param),
             };
-            ffi_handle_err!(err, $errptr);
+            ffi_return_err!(err, $errptr);
         }
     }};
 }
@@ -42,4 +42,11 @@ pub(crate) fn cstring(cstr: *const c_char) -> Result<String> {
             });
         }
     }
+}
+
+pub extern "C" fn cfm_string_destroy(s: *mut c_char) -> u32 {
+    unsafe {
+        Box::from_raw(s);
+    }
+    0
 }
