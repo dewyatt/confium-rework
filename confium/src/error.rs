@@ -1,4 +1,5 @@
 use std::backtrace::Backtrace;
+use std::path::PathBuf;
 
 pub struct ErrorCommon {
     pub source: Option<Box<Error>>,
@@ -19,6 +20,10 @@ pub enum Error {
     WrongType {
         common: ErrorCommon,
         expected: &'static str,
+    },
+    PluginLoadFailed {
+        common: ErrorCommon,
+        plugin: PathBuf,
     },
 }
 
@@ -43,6 +48,7 @@ pub enum ErrorCode {
     NULL_POINTER = 2,
     INVALID_UTF8 = 3,
     WRONG_TYPE = 4,
+    PLUGIN_LOAD_FAILED = 5,
 }
 
 fn error_code(error: &Error) -> u32 {
@@ -51,6 +57,7 @@ fn error_code(error: &Error) -> u32 {
         Error::NullPointer { .. } => ErrorCode::NULL_POINTER.into(),
         Error::InvalidUTF8 { .. } => ErrorCode::INVALID_UTF8.into(),
         Error::WrongType { .. } => ErrorCode::WRONG_TYPE.into(),
+        Error::PluginLoadFailed { .. } => ErrorCode::PLUGIN_LOAD_FAILED.into(),
     }
 }
 
@@ -60,6 +67,7 @@ fn error_common(error: &Error) -> &ErrorCommon {
         Error::NullPointer { common, .. } => common,
         Error::InvalidUTF8 { common, .. } => common,
         Error::WrongType { common, .. } => common,
+        Error::PluginLoadFailed { common, .. } => common,
     }
 }
 
@@ -84,6 +92,13 @@ impl std::fmt::Display for Error {
             }
             Error::WrongType { expected, .. } => {
                 write!(f, "Wrong type (expected '{}')", expected)
+            }
+            Error::PluginLoadFailed { ref plugin, .. } => {
+                write!(
+                    f,
+                    "Plugin load failed for plugin '{}'",
+                    plugin.to_string_lossy()
+                )
             }
         }
     }

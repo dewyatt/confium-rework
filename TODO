@@ -1,0 +1,16 @@
+load_plugin("myplugin.so");
+load_plugin("hash", "myplugin.so");
+load_plugin("hash:sha512", "myplugin.so");
+
+trust-dns Error trace!()
+
+Do we want to map all of io::ErrorKind to our own codes?
+NotFound,
+PermissionDenied,
+ConnectionRefused,
+...
+
+https://yimingjing.com/papers/rustfest_rome_2018.pdf
+ffi magic markers
+catch_unwind guard on all ffi funcs?
+
