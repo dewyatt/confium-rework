@@ -2,6 +2,7 @@
 
 #[macro_use]
 pub extern crate slog;
+extern crate libc;
 extern crate libloading;
 extern crate slog_async;
 extern crate slog_stdlog;

@@ -5,7 +5,7 @@ pub type Options = HashMap<String, OptionValue>;
 #[derive(PartialEq)]
 pub enum OptionValue {
     String(String),
-    u32(u32),
+    U32(u32),
 }
 
 #[cfg(test)]
@@ -22,7 +22,7 @@ mod tests {
     #[test]
     fn u32_values() {
         let mut opts = Options::new();
-        opts.insert("num".to_string(), OptionValue::u32(5));
-        assert!(opts[&"num".to_string()] == OptionValue::u32(5));
+        opts.insert("num".to_string(), OptionValue::U32(5));
+        assert!(opts[&"num".to_string()] == OptionValue::U32(5));
     }
 }

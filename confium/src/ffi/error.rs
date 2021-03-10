@@ -1,6 +1,7 @@
-use crate::error::{Error, ErrorCode};
 use std::ffi::CString;
 use std::os::raw::c_char;
+
+use crate::error::{Error, ErrorCode};
 
 #[derive(Clone)]
 pub struct FFIError {
