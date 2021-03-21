@@ -1,6 +1,6 @@
 use std::os::raw::c_char;
 
-use crate::ffi::error::FFIError;
+use crate::error::Error;
 use crate::hash::Hash;
 use crate::Confium;
 
@@ -10,7 +10,7 @@ extern "C" fn cfm_hash_create(
     cfm: *const Confium,
     hash: *mut *mut Hash,
     name: *const c_char,
-    err: *mut *mut FFIError,
+    err: *mut *mut Error,
 ) -> u32 {
     unimplemented!();
 }

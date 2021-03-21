@@ -11,7 +11,7 @@ macro_rules! ffi_return_err {
         let code = $error.code();
         if !$errptr.is_null() {
             unsafe {
-                *$errptr = Box::into_raw(Box::new($crate::ffi::error::FFIError::from(&$error)));
+                *$errptr = Box::into_raw(Box::new($error));
             }
         }
         return code;
@@ -22,10 +22,10 @@ macro_rules! ffi_return_err {
 macro_rules! ffi_check_not_null {
     ($param:ident, $errptr:ident) => {{
         if $param.is_null() {
-            let err = $crate::error::Error::NullPointer {
-                common: err_common!(None),
+            let err = $crate::error::NullPointer {
                 param: stringify!($param),
-            };
+            }
+            .build();
             ffi_return_err!(err, $errptr);
         }
     }};
@@ -37,9 +37,7 @@ pub(crate) fn cstring(cstr: *const c_char) -> Result<String> {
     match cstr {
         Ok(s) => Ok(s.to_string()),
         Err(_) => {
-            return Err(Error::InvalidUTF8 {
-                common: err_common!(None),
-            });
+            return Err(crate::error::InvalidUTF8 {}.build());
         }
     }
 }

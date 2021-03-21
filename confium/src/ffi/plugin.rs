@@ -4,17 +4,18 @@ use std::rc::Rc;
 use libloading::Library;
 
 use crate::error::Error;
-use crate::ffi::error::FFIError;
+use crate::error::*;
 use crate::ffi::utils::cstring;
 use crate::options::Options;
 use crate::Confium;
+use snafu::ResultExt;
 
 #[no_mangle]
 pub extern "C" fn cfm_plugin_load(
     cfm: *mut Confium,
     c_path: *const c_char,
     opts: *mut Options,
-    err: *mut *mut FFIError,
+    err: *mut *mut Error,
 ) -> u32 {
     // plugin query features using options list?
     // cfmp_query_features()
@@ -25,19 +26,7 @@ pub extern "C" fn cfm_plugin_load(
         Err(e) => ffi_return_err!(e, err),
     };
     let path = std::path::PathBuf::from(path);
-    let lib = Rc::new(match Library::new(&path) {
-        Ok(l) => l,
-        Err(e) => {
-            unsafe {
-                error!((*cfm).logger, "Failed to load plugin: {}", e);
-            }
-            let e = Error::PluginLoadFailed {
-                common: err_common!(None),
-                plugin: path,
-            };
-            ffi_return_err!(e, err);
-        }
-    });
+    let lib = Rc::new(Library::new(&path).context(PluginLoadFailed { plugin: path }));
     unimplemented!();
 }
 

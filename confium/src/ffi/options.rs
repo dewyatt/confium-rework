@@ -1,8 +1,8 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+use crate::error;
 use crate::error::Error;
-use crate::ffi::error::FFIError;
 use crate::ffi::utils::cstring;
 use crate::options::{OptionValue, Options};
 
@@ -15,7 +15,7 @@ use crate::options::{OptionValue, Options};
 //* bool
 
 #[no_mangle]
-pub extern "C" fn cfm_opts_create(opts: *mut *mut Options, err: *mut *mut FFIError) -> u32 {
+pub extern "C" fn cfm_opts_create(opts: *mut *mut Options, err: *mut *mut Error) -> u32 {
     ffi_check_not_null!(opts, err);
     unsafe {
         *opts = Box::into_raw(Box::new(Options::new()));
@@ -38,7 +38,7 @@ pub extern "C" fn cfm_opts_set_string(
     opts: *mut Options,
     key: *const c_char,
     value: *const c_char,
-    err: *mut *mut FFIError,
+    err: *mut *mut Error,
 ) -> u32 {
     ffi_check_not_null!(opts, err);
     ffi_check_not_null!(key, err);
@@ -66,7 +66,7 @@ pub extern "C" fn cfm_opts_get_string(
     opts: *mut Options,
     key: *const c_char,
     value: *mut *const c_char,
-    err: *mut *mut FFIError,
+    err: *mut *mut Error,
 ) -> u32 {
     ffi_check_not_null!(opts, err);
     ffi_check_not_null!(key, err);
@@ -82,10 +82,7 @@ pub extern "C" fn cfm_opts_get_string(
             if let OptionValue::String(ref s) = v {
                 *value = CString::new(s.clone()).unwrap().into_raw();
             } else {
-                let e = Error::WrongType {
-                    expected: "string",
-                    common: err_common!(None),
-                };
+                let e = error::WrongType { expected: "string" }.build();
                 ffi_return_err!(e, err);
             }
         } else {
@@ -100,7 +97,7 @@ pub extern "C" fn cfm_opts_get_string(
 pub extern "C" fn cfm_opts_remove(
     opts: *mut Options,
     key: *const c_char,
-    err: *mut *mut FFIError,
+    err: *mut *mut Error,
 ) -> u32 {
     ffi_check_not_null!(opts, err);
     ffi_check_not_null!(key, err);
@@ -116,7 +113,7 @@ pub extern "C" fn cfm_opts_remove(
     0
 }
 #[no_mangle]
-pub extern "C" fn cfm_opts_clear(opts: *mut Options, err: *mut *mut FFIError) -> u32 {
+pub extern "C" fn cfm_opts_clear(opts: *mut Options, err: *mut *mut Error) -> u32 {
     ffi_check_not_null!(opts, err);
     unsafe {
         (*opts).clear();
