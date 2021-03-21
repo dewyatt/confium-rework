@@ -17,7 +17,9 @@ pub mod options;
 
 use std::collections::HashMap;
 use std::path::Path;
+use std::rc::Rc;
 
+use libloading::Library;
 use slog::Drain;
 
 use error::Error;
@@ -29,6 +31,7 @@ const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Confium {
+    libraries: Vec<Rc<Library>>,
     logger: slog::Logger,
 }
 

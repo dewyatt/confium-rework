@@ -26,7 +26,11 @@ pub extern "C" fn cfm_plugin_load(
         Err(e) => ffi_return_err!(e, err),
     };
     let path = std::path::PathBuf::from(path);
-    let lib = Rc::new(Library::new(&path).context(PluginLoadFailed { plugin: path }));
+    let lib = Library::new(&path).context(PluginLoadFailed { plugin: path });
+    if let Err(e) = lib {
+        ffi_return_err!(e, err);
+    }
+    (*cfm).libraries.push(Rc::new(lib.unwrap()));
     unimplemented!();
 }
 
