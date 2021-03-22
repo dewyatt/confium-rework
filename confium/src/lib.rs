@@ -30,8 +30,13 @@ const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+pub struct Plugin {
+    pub library: Rc<Library>,
+    pub info: options::Options,
+}
+
 pub struct Confium {
-    libraries: Vec<Rc<Library>>,
+    libraries: Vec<Plugin>,
     logger: slog::Logger,
 }
 
@@ -55,7 +60,7 @@ impl Confium {
 
     // TODO: Support Rust plugins
     pub fn load_plugin(&self, path: &Path, options: &StringOptions) -> Result<()> {
-        panic!();
+        unimplemented!();
     }
 }
 
