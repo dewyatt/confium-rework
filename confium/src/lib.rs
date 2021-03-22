@@ -41,6 +41,7 @@ impl Confium {
             logger: logger
                 .into()
                 .unwrap_or(slog::Logger::root(slog_stdlog::StdLog.fuse(), o!())),
+            libraries: vec![],
         }
     }
 
