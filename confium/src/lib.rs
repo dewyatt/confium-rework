@@ -23,6 +23,7 @@ use libloading::Library;
 use slog::Drain;
 
 use error::Error;
+use ffi::plugin::PluginVTable;
 
 type StringOptions = HashMap<String, String>;
 
@@ -32,11 +33,12 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Plugin {
     pub library: Rc<Library>,
-    pub info: options::Options,
+    pub capabilities: options::Options,
+    pub vtable: PluginVTable,
 }
 
 pub struct Confium {
-    libraries: Vec<Plugin>,
+    plugins: Vec<Plugin>,
     logger: slog::Logger,
 }
 
@@ -46,7 +48,7 @@ impl Confium {
             logger: logger
                 .into()
                 .unwrap_or(slog::Logger::root(slog_stdlog::StdLog.fuse(), o!())),
-            libraries: vec![],
+            plugins: vec![],
         }
     }
 

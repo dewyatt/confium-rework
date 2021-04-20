@@ -34,6 +34,58 @@ pub extern "C" fn cfm_opts_destroy(opts: *mut Options) -> u32 {
 }
 
 #[no_mangle]
+pub extern "C" fn cfm_opts_set_u32(
+    opts: *mut Options,
+    key: *const c_char,
+    value: u32,
+    err: *mut *mut Error,
+) -> u32 {
+    ffi_check_not_null!(opts, err);
+    ffi_check_not_null!(key, err);
+    let key = match cstring(key) {
+        Ok(s) => s,
+        Err(e) => {
+            ffi_return_err!(e, err);
+        }
+    };
+    unsafe {
+        (*opts).insert(key, OptionValue::U32(value));
+    }
+    0
+}
+
+#[no_mangle]
+pub extern "C" fn cfm_opts_get_u32(
+    opts: *mut Options,
+    key: *const c_char,
+    value: *mut u32,
+    err: *mut *mut Error,
+) -> u32 {
+    ffi_check_not_null!(opts, err);
+    ffi_check_not_null!(key, err);
+    ffi_check_not_null!(value, err);
+    let key = match cstring(key) {
+        Ok(s) => s,
+        Err(e) => {
+            ffi_return_err!(e, err);
+        }
+    };
+    unsafe {
+        if let Some(v) = (*opts).get(&key) {
+            if let OptionValue::U32(v) = v {
+                *value = *v;
+            } else {
+                let e = error::WrongType { expected: "u32" }.build();
+                ffi_return_err!(e, err);
+            }
+        } else {
+            let e = error::ValueNotFound.build();
+            ffi_return_err!(e, err);
+        }
+    }
+    0
+}
+#[no_mangle]
 pub extern "C" fn cfm_opts_set_string(
     opts: *mut Options,
     key: *const c_char,
@@ -86,8 +138,8 @@ pub extern "C" fn cfm_opts_get_string(
                 ffi_return_err!(e, err);
             }
         } else {
-            // not found
-            *value = std::ptr::null_mut();
+            let e = error::ValueNotFound.build();
+            ffi_return_err!(e, err);
         }
     }
     0

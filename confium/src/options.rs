@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 pub type Options = HashMap<String, OptionValue>;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum OptionValue {
     String(String),
     U32(u32),
+    Options(Box<Options>),
 }
 
 #[cfg(test)]
@@ -24,5 +25,19 @@ mod tests {
         let mut opts = Options::new();
         opts.insert("num".to_string(), OptionValue::U32(5));
         assert!(opts[&"num".to_string()] == OptionValue::U32(5));
+    }
+
+    #[test]
+    fn options_values() {
+        let mut opts = Options::new();
+        let mut inner = Options::new();
+        inner.insert("num".to_string(), OptionValue::U32(3535));
+        opts.insert("opts".to_string(), OptionValue::Options(Box::new(inner)));
+        // TODO: this can't be the best way
+        if let OptionValue::Options(value) = &opts[&"opts".to_string()] {
+            assert!(value[&"num".to_string()] == OptionValue::U32(3535));
+        } else {
+            assert!(false);
+        }
     }
 }

@@ -6,6 +6,10 @@ use crate::Confium;
 
 pub type HashCreateFn = extern "C" fn(*mut Confium, *const c_char, *mut *mut Hash) -> u32;
 
+struct HashV0 {
+    create: Box<HashCreateFn>,
+}
+
 extern "C" fn cfm_hash_create(
     cfm: *const Confium,
     hash: *mut *mut Hash,
