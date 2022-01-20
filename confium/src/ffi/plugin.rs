@@ -9,6 +9,7 @@ use crate::error::Error;
 use crate::error::*;
 use crate::ffi::hash::create_hash_interface;
 use crate::ffi::hash::HashInterface;
+//use crate::ffi::rsa::RSAInterface;
 use crate::ffi::utils::cstring;
 use crate::options::Options;
 use crate::Confium;
@@ -19,6 +20,7 @@ use crate::Result;
 #[derive(Debug)]
 pub enum PluginInterface {
     Hash(HashInterface),
+    //RSA(RSAInterface),
 }
 
 // plugin interface version

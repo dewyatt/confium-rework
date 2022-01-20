@@ -15,6 +15,7 @@ pub mod error;
 pub mod ffi;
 pub mod hash;
 pub mod options;
+pub mod pk;
 
 use std::collections::HashMap;
 use std::path::Path;
